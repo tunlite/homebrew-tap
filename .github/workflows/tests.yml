@@ -1,0 +1,31 @@
+name: Formula
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  formula:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [macos-15, ubuntu-latest]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - name: Set up Homebrew and check out this tap
+        uses: Homebrew/actions/setup-homebrew@8f3d1ec8a696b3b9d9a6c3696b6c73033cab69e4 # 2026.08.14.1
+        with:
+          token: ${{ github.token }}
+      - name: Check formula style and metadata
+        run: |
+          brew style tunlite/tap/tunlite
+          brew audit --strict tunlite/tap/tunlite
+      - name: Install from source and run isolated CLI tests
+        run: |
+          brew install --build-from-source tunlite/tap/tunlite
+          brew test tunlite/tap/tunlite
