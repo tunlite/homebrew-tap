@@ -3,7 +3,7 @@ class Tunlite < Formula
   homepage "https://github.com/tunlite/tunlite"
   version "1.0.0-preview.1"
   license "MIT"
-  revision 1
+  revision 2
 
   on_macos do
     on_intel do
@@ -29,10 +29,36 @@ class Tunlite < Formula
     end
   end
 
+  resource "use-tunlite" do
+    url "https://raw.githubusercontent.com/tunlite/tunlite/v1.0.0-preview.1/skill/use-tunlite/SKILL.md", using: :nounzip
+    version "1.0.0-preview.1"
+    sha256 "d65a6048466713f45d3177868e90b59d3e5a8066784f3135e0731c1f7767941e"
+  end
+
   deny_network_access! :test
 
   def install
     bin.install "tunlite"
+    if File.file?("skills/use-tunlite/SKILL.md")
+      (share/"tunlite/skills").install "skills/use-tunlite"
+    else
+      resource("use-tunlite").stage do
+        (share/"tunlite/skills/use-tunlite").install "SKILL.md"
+      end
+    end
+  end
+
+  def caveats
+    <<~EOS
+      The matching use-tunlite Agent Skill is installed at:
+        #{opt_share}/tunlite/skills/use-tunlite
+
+      To activate it, copy this prompt into your Agent:
+        Install the use-tunlite Skill from "#{opt_share}/tunlite/skills/use-tunlite" and enable it for Tunlite tasks.
+
+      Homebrew does not modify Agent configuration. After upgrading, refresh any
+      Skill copy installed in your Agent; use this stable path if it supports links.
+    EOS
   end
 
   test do
@@ -48,5 +74,13 @@ class Tunlite < Formula
     assert_equal "succeeded", result.fetch("outcome")
     assert_equal [], result.fetch("results")
     refute_path_exists testpath/"tunlite"
+
+    skill = share/"tunlite/skills/use-tunlite/SKILL.md"
+    assert_path_exists skill
+    assert_predicate skill, :readable?
+    assert_match(/\A---\nname: use-tunlite\n/, skill.read)
+    assert_match "<!-- tunlite-contract\nprotocolVersion: 1\n", skill.read
+    assert_match (opt_share/"tunlite/skills/use-tunlite").to_s, caveats
+    assert_match "Install the use-tunlite Skill from", caveats
   end
 end
