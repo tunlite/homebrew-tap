@@ -6,8 +6,15 @@ class Tunlite < Formula
   revision 1
 
   on_macos do
-    url "https://github.com/tunlite/tunlite/releases/download/v1.0.0-preview.1/tunlite_1.0.0-preview.1_macos.tar.gz"
-    sha256 "c29385423f7edea6fbce09667238255c664732abb8368773abc374e8da9dbb67"
+    on_intel do
+      url "https://github.com/tunlite/tunlite/releases/download/v1.0.0-preview.1/tunlite_1.0.0-preview.1_macos.tar.gz"
+      sha256 "c29385423f7edea6fbce09667238255c664732abb8368773abc374e8da9dbb67"
+    end
+
+    on_arm do
+      url "https://github.com/tunlite/tunlite/releases/download/v1.0.0-preview.1/tunlite_1.0.0-preview.1_macos.tar.gz"
+      sha256 "c29385423f7edea6fbce09667238255c664732abb8368773abc374e8da9dbb67"
+    end
   end
 
   on_linux do
