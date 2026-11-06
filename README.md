@@ -68,8 +68,9 @@ an unidentified copy. This formula does not migrate older dev service records.
    independently authenticate the publisher. The initial tag peels to
    `2435b9496446d2b395aca87f26dd337552e204e6` and the archive checksum is
    `ceed905a07e3ce6915c009811789818ec697dacc471eadb63de57beaf97a9805`.
-3. Change the Formula's `url` and `sha256` together. Homebrew derives `version`
-   from the tag URL; the linker injects that version into
+3. Change the Formula's `url`, explicit `version`, and `sha256` together. Keep the
+   full prerelease version explicit because Homebrew's URL parser can shorten it.
+   The linker injects that version into
    `github.com/tunlite/tunlite/internal/cli.Version`. Update examples here if the
    fixed preview changes. Do not copy the prebuilt binary archive's checksum.
 4. Run `brew style tunlite/tap/tunlite`, `brew audit --strict tunlite/tap/tunlite`,

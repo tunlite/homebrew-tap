@@ -2,6 +2,7 @@ class Tunlite < Formula
   desc "Named SSH connections managed by native operating-system services"
   homepage "https://github.com/tunlite/tunlite"
   url "https://github.com/tunlite/tunlite/archive/refs/tags/v1.0.0-preview.1.tar.gz"
+  version "1.0.0-preview.1"
   sha256 "ceed905a07e3ce6915c009811789818ec697dacc471eadb63de57beaf97a9805"
   license "MIT"
 
