@@ -1,25 +1,31 @@
 class Tunlite < Formula
   desc "Named SSH connections managed by native operating-system services"
   homepage "https://github.com/tunlite/tunlite"
-  url "https://github.com/tunlite/tunlite/archive/refs/tags/v1.0.0-preview.1.tar.gz"
   version "1.0.0-preview.1"
-  sha256 "ceed905a07e3ce6915c009811789818ec697dacc471eadb63de57beaf97a9805"
   license "MIT"
+  revision 1
 
-  depends_on "go" => :build
+  on_macos do
+    url "https://github.com/tunlite/tunlite/releases/download/v1.0.0-preview.1/tunlite_1.0.0-preview.1_macos.tar.gz"
+    sha256 "c29385423f7edea6fbce09667238255c664732abb8368773abc374e8da9dbb67"
+  end
+
+  on_linux do
+    on_intel do
+      url "https://github.com/tunlite/tunlite/releases/download/v1.0.0-preview.1/tunlite_1.0.0-preview.1_linux_x64.tar.gz"
+      sha256 "b174be466be6bb75a8119058df4f35629efb596f1732abcb2218920b71c90a7f"
+    end
+
+    on_arm do
+      url "https://github.com/tunlite/tunlite/releases/download/v1.0.0-preview.1/tunlite_1.0.0-preview.1_linux_arm64.tar.gz"
+      sha256 "3ec874d994f85ef22fb8b03a24ef1b132bde39d27bdf968a505a0af03fa0a1e8"
+    end
+  end
 
   deny_network_access! :test
 
-  def fetch
-    system "go", "mod", "download"
-  end
-
   def install
-    # Homebrew releases before the fetch hook download modules during install.
-    fetch unless respond_to?(:fetch_defined?)
-    ENV["GOPROXY"] = "off"
-    ldflags = "-X github.com/tunlite/tunlite/internal/cli.Version=#{version}"
-    system "go", "build", *std_go_args(ldflags:), "./cmd/tunlite"
+    bin.install "tunlite"
   end
 
   test do

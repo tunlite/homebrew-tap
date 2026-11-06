@@ -1,7 +1,6 @@
 # Tunlite Homebrew tap
 
-This repository is prepared for publication as `tunlite/homebrew-tap`. Once it is
-public, install the fixed `1.0.0-preview.1` release with:
+Install the published `1.0.0-preview.1` release from `tunlite/homebrew-tap`:
 
 ```sh
 brew install tunlite/tap/tunlite
@@ -9,10 +8,11 @@ type -a tunlite
 tunlite version --json
 ```
 
-Homebrew verifies the pinned HTTPS source archive's SHA-256, installs Go as a build
-dependency, and compiles only the `tunlite` CLI from `./cmd/tunlite`. Go is not a
-runtime dependency. Follow Homebrew's `brew shellenv` instructions to put its `bin`
-directory in `PATH`.
+Homebrew downloads the official release archive for your platform, verifies its
+pinned SHA-256, and installs the already compiled `tunlite` CLI. It does not install
+Go or compile source, and the Formula has no build or runtime formula dependencies.
+macOS uses the Universal 2 binary; Linux selects x86_64 or arm64. Follow Homebrew's
+`brew shellenv` instructions to put its `bin` directory in `PATH`.
 
 The system OpenSSH `ssh` executable must be available at runtime (or set
 `TUNLITE_SSH` to its absolute path). Tunlite supports macOS 12+ with per-Connection
@@ -25,17 +25,25 @@ non-container Linux hosts.
 
 There is no central `brew services` service. Installation and formula tests do not
 create connections, edit SSH credentials/configuration, or start or stop tunnels.
-Source compilation normally avoids browser-download quarantine, but does not
-provide Apple developer signing or notarization and is not a guarantee against
-enterprise policies.
+Homebrew delivery does not provide Apple developer signing or notarization and is
+not a guarantee against quarantine or enterprise policies.
 
 ## Upgrade and remove
 
 ```sh
 brew update
 brew upgrade tunlite/tap/tunlite
+# To reinstall the current package when necessary:
+brew reinstall tunlite/tap/tunlite
+# To remove the CLI:
 brew uninstall tunlite/tap/tunlite
 ```
+
+Run `brew update` before retrying an installation from an older tapped checkout.
+The binary package is revision `1` (`1.0.0-preview.1_1` in Homebrew), so an existing
+source-built `1.0.0-preview.1` upgrades without changing the application version.
+This packaging change does not automatically remove Go installed by a previous
+Formula; manage existing Go installations separately according to your needs.
 
 Upgrade installs the version published in this tap. Removing the CLI does **not**
 stop existing SSH services owned by launchd or systemd, nor remove declarations or
@@ -52,34 +60,34 @@ an unidentified copy. This formula does not migrate older dev service records.
 
 1. Confirm the new published tag and its commit in the official
    [`tunlite/tunlite`](https://github.com/tunlite/tunlite) repository. Never move an
-   existing release tag or replace its source archive silently.
-2. Download the exact tag archive over HTTPS and calculate its checksum:
+   existing release tag or replace its published assets silently.
+2. Download `SHA256SUMS` and all three platform archives from that exact Release
+   over HTTPS. For example:
 
    ```sh
    curl --fail --location --proto '=https' --tlsv1.2 \
-     https://github.com/tunlite/tunlite/archive/refs/tags/v1.0.0-preview.1.tar.gz \
-     --output tunlite-source.tar.gz
-   shasum -a 256 tunlite-source.tar.gz
-   # Linux alternative: sha256sum tunlite-source.tar.gz
+     https://github.com/tunlite/tunlite/releases/download/v1.0.0-preview.1/SHA256SUMS \
+     --output SHA256SUMS
+   curl --fail --location --proto '=https' --tlsv1.2 \
+     https://github.com/tunlite/tunlite/releases/download/v1.0.0-preview.1/tunlite_1.0.0-preview.1_macos.tar.gz \
+     --output tunlite_1.0.0-preview.1_macos.tar.gz
+   shasum -a 256 tunlite_1.0.0-preview.1_macos.tar.gz
+   # Linux alternative: sha256sum tunlite_1.0.0-preview.1_macos.tar.gz
    ```
 
-   Check its extracted contents against `git archive <tag>` from the verified
-   official tag. The archive checksum pins the exact downloaded bytes; it does not
-   independently authenticate the publisher. The initial tag peels to
-   `2435b9496446d2b395aca87f26dd337552e204e6` and the archive checksum is
-   `ceed905a07e3ce6915c009811789818ec697dacc471eadb63de57beaf97a9805`.
-3. Change the Formula's `url`, explicit `version`, and `sha256` together. Keep the
-   full prerelease version explicit because Homebrew's URL parser can shorten it.
-   The linker injects that version into
-   `github.com/tunlite/tunlite/internal/cli.Version`. Update examples here if the
-   fixed preview changes. Do not copy the prebuilt binary archive's checksum.
+   Repeat for `linux_x64` and `linux_arm64`, compare every calculated checksum
+   with `SHA256SUMS` and GitHub's asset metadata, and verify the Release Artifact
+   Attestation as described upstream. A checksum pins downloaded bytes; it does
+   not independently authenticate the publisher. Do not use a source archive digest.
+3. Change all platform `url` and `sha256` values together with explicit `version`.
+   Keep the full prerelease version explicit because Homebrew's URL parser can
+   shorten it. Reset `revision` when the application version changes; increment it
+   when packaging changes require reinstalling the same application version.
+   Confirm each installed binary reports the exact version and update examples.
 4. Run `brew style tunlite/tap/tunlite`, `brew audit --strict tunlite/tap/tunlite`,
-   `brew reinstall --build-from-source tunlite/tap/tunlite`, and
+   `brew reinstall tunlite/tap/tunlite`, and
    `brew test tunlite/tap/tunlite` in a clean test environment. CI runs style,
-   audit, source installation, and isolated tests on macOS and Linux.
+   audit, a dependency check, binary installation, and isolated tests on macOS and Linux.
 
 The built-in test checks plain and JSON versions plus read-only `list` against a
 temporary `TUNLITE_HOME`, and asserts that it creates no configuration/state.
-Current Homebrew downloads Go modules in the `fetch` phase before an offline
-build; older releases without that hook download modules during installation.
-Go's module checksum verification stays enabled in both cases.

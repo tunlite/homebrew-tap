@@ -25,7 +25,11 @@ jobs:
         run: |
           brew style tunlite/tap/tunlite
           brew audit --strict tunlite/tap/tunlite
-      - name: Install from source and run isolated CLI tests
+      - name: Verify installation needs no Go or other formula dependencies
         run: |
-          brew install --build-from-source tunlite/tap/tunlite
+          dependencies="$(brew deps --include-build tunlite/tap/tunlite)"
+          test -z "$dependencies"
+      - name: Install release binary and run isolated CLI tests
+        run: |
+          brew install tunlite/tap/tunlite
           brew test tunlite/tap/tunlite
